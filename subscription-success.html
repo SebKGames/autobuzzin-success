@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoBuzzIn - Payment Success</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 24px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .confirmation-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+        .confirmation-label {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .confirmation-number {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            margin: 8px;
+        }
+        .button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .button.secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        .button.secondary:hover {
+            background: #e2e8f0;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #10b981;
+        }
+        .feature-icon {
+            font-size: 16px;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px;
+                margin: 16px;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📞</div>
+        <div class="success-icon">✅</div>
+        <h1>Payment Successful!</h1>
+        <p class="subtitle">Your AutoBuzzIn account has been upgraded to full access.</p>
+        
+        <div class="confirmation-box">
+            <div class="confirmation-label">Confirmation Number:</div>
+            <div class="confirmation-number" id="confirmation-number">Loading...</div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">✅</span>
+                <span>Full app access</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">✅</span>
+                <span>Twilio account reconnected</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">✅</span>
+                <span>All features unlocked</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">✅</span>
+                <span>Up to 2 phone numbers</span>
+            </div>
+        </div>
+
+        <div id="redirect-info" style="display: none;">
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
+                <strong>Redirecting you back to the app...</strong>
+            </p>
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 16px;">
+                <div class="spinner"></div>
+                <span style="color: #6b7280;">Please wait</span>
+            </div>
+        </div>
+
+        <div id="manual-redirect" style="display: none;">
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
+                If you're not redirected automatically:
+            </p>
+            <a href="capacitor://localhost/app" class="button">Open AutoBuzzIn App</a>
+            <a href="https://apps.apple.com/app/autobuzzin" class="button secondary" target="_blank">Download App</a>
+        </div>
+    </div>
+
+    <script>
+        // Get session ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
+        
+        if (sessionId) {
+            document.getElementById('confirmation-number').textContent = sessionId.substring(0, 20) + '...';
+            console.log('Payment successful with session ID:', sessionId);
+        } else {
+            document.getElementById('confirmation-number').textContent = 'N/A';
+        }
+
+        // Show redirect info after 1 second
+        setTimeout(() => {
+            document.getElementById('redirect-info').style.display = 'block';
+        }, 1000);
+
+        // Show manual redirect option after 4 seconds
+        setTimeout(() => {
+            document.getElementById('manual-redirect').style.display = 'block';
+        }, 4000);
+
+        // Try to redirect back to the app
+        function redirectToApp() {
+            const redirectUrls = [
+                'capacitor://localhost/app',
+                'autobuzzin://app',
+                'autobuzzin://subscription-success'
+            ];
+            
+            for (const url of redirectUrls) {
+                try {
+                    window.location.href = url;
+                    console.log('Attempting redirect to:', url);
+                    break;
+                } catch (e) {
+                    console.log('Redirect failed for:', url);
+                }
+            }
+        }
+
+        // Try to redirect after 2 seconds
+        setTimeout(redirectToApp, 2000);
+
+        // Also try redirect when user clicks anywhere
+        document.addEventListener('click', () => {
+            redirectToApp();
+        });
+    </script>
+</body>
+</html>
