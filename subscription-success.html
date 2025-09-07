@@ -140,7 +140,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">📞</div>
+        <div class="logo">��</div>
         <div class="success-icon">✅</div>
         <h1>Payment Successful!</h1>
         <p class="subtitle">Your AutoBuzzIn account has been upgraded to full access.</p>
@@ -171,20 +171,18 @@
 
         <div id="redirect-info" style="display: none;">
             <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
-                <strong>Redirecting you back to the app...</strong>
+                <strong>Payment processed successfully!</strong>
             </p>
-            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 16px;">
-                <div class="spinner"></div>
-                <span style="color: #6b7280;">Please wait</span>
-            </div>
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
+                You can now return to the AutoBuzzIn app. Your account will be automatically restored.
+            </p>
         </div>
 
         <div id="manual-redirect" style="display: none;">
             <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
-                If you're not redirected automatically:
+                Return to the AutoBuzzIn app to continue:
             </p>
-            <a href="capacitor://localhost/app" class="button">Open AutoBuzzIn App</a>
-            <a href="https://apps.apple.com/app/autobuzzin" class="button secondary" target="_blank">Download App</a>
+            <button onclick="storeSuccessAndRedirect()" class="button">Return to App</button>
         </div>
     </div>
 
@@ -205,37 +203,34 @@
             document.getElementById('redirect-info').style.display = 'block';
         }, 1000);
 
-        // Show manual redirect option after 4 seconds
+        // Show manual redirect option after 3 seconds
         setTimeout(() => {
             document.getElementById('manual-redirect').style.display = 'block';
-        }, 4000);
+        }, 3000);
 
-        // Try to redirect back to the app
-        function redirectToApp() {
-            const redirectUrls = [
-                'capacitor://localhost/app',
-                'autobuzzin://app',
-                'autobuzzin://subscription-success'
-            ];
+        // Store success and redirect
+        function storeSuccessAndRedirect() {
+            // Store payment success in localStorage
+            localStorage.setItem('payment_success', 'true');
+            localStorage.setItem('payment_timestamp', Date.now().toString());
             
-            for (const url of redirectUrls) {
-                try {
-                    window.location.href = url;
-                    console.log('Attempting redirect to:', url);
-                    break;
-                } catch (e) {
-                    console.log('Redirect failed for:', url);
-                }
+            console.log('✅ Payment success stored in localStorage');
+            
+            // Show success message
+            alert('Payment successful! Return to the AutoBuzzIn app now. Your account will be automatically restored.');
+            
+            // Try to close the browser tab/window
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Could not close window:', e);
             }
         }
 
-        // Try to redirect after 2 seconds
-        setTimeout(redirectToApp, 2000);
-
-        // Also try redirect when user clicks anywhere
-        document.addEventListener('click', () => {
-            redirectToApp();
-        });
+        // Auto-trigger after 5 seconds
+        setTimeout(() => {
+            storeSuccessAndRedirect();
+        }, 5000);
     </script>
 </body>
 </html>
