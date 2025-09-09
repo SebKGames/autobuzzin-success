@@ -25,91 +25,40 @@
             width: 100%;
         }
         .logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            background: #3b82f6;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: white;
+            font-size: 48px;
+            margin-bottom: 16px;
         }
         .success-icon {
-            font-size: 48px;
-            color: #10b981;
-            margin-bottom: 20px;
+            font-size: 64px;
+            margin-bottom: 24px;
         }
         h1 {
             color: #1f2937;
-            margin-bottom: 16px;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
+            margin: 0 0 16px 0;
         }
         .subtitle {
             color: #6b7280;
-            margin-bottom: 24px;
-            font-size: 16px;
-            line-height: 1.5;
+            font-size: 18px;
+            margin-bottom: 32px;
         }
         .confirmation-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 20px;
             margin: 24px 0;
         }
         .confirmation-label {
+            color: #6b7280;
             font-size: 14px;
-            color: #64748b;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
         .confirmation-number {
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 14px;
-            color: #1e293b;
+            color: #1f2937;
+            font-size: 18px;
             font-weight: 600;
-        }
-        .button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s;
-            margin: 8px;
-        }
-        .button:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-        .button.secondary {
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #e2e8f0;
-        }
-        .button.secondary:hover {
-            background: #e2e8f0;
-        }
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            font-family: monospace;
         }
         .features {
             display: grid;
@@ -127,20 +76,47 @@
         .feature-icon {
             font-size: 16px;
         }
-        @media (max-width: 480px) {
-            .container {
-                padding: 24px;
-                margin: 16px;
-            }
-            .features {
-                grid-template-columns: 1fr;
-            }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            margin: 8px;
+        }
+        .button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">��</div>
+        <div class="logo">📞</div>
         <div class="success-icon">✅</div>
         <h1>Payment Successful!</h1>
         <p class="subtitle">Your AutoBuzzIn account has been upgraded to full access.</p>
@@ -169,21 +145,15 @@
             </div>
         </div>
 
-        <div id="redirect-info" style="display: none;">
-            <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
-                <strong>Payment processed successfully!</strong>
-            </p>
-            <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
-                You can now return to the AutoBuzzIn app. Your account will be automatically restored.
-            </p>
+        <div id="status-message">
+            <strong>🔄 Processing your payment...</strong><br>
+            Please wait while we activate your account.
         </div>
 
-        <div id="manual-redirect" style="display: none;">
-            <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">
-                Return to the AutoBuzzIn app to continue:
-            </p>
-            <button onclick="storeSuccessAndRedirect()" class="button">Return to App</button>
-        </div>
+        <button id="return-button" class="button" disabled>
+            <span class="loading"></span>
+            Processing...
+        </button>
     </div>
 
     <script>
@@ -198,39 +168,100 @@
             document.getElementById('confirmation-number').textContent = 'N/A';
         }
 
-        // Show redirect info after 1 second
-        setTimeout(() => {
-            document.getElementById('redirect-info').style.display = 'block';
-        }, 1000);
-
-        // Show manual redirect option after 3 seconds
-        setTimeout(() => {
-            document.getElementById('manual-redirect').style.display = 'block';
-        }, 3000);
-
-        // Store success and redirect
-        function storeSuccessAndRedirect() {
-            // Store payment success in localStorage
-            localStorage.setItem('payment_success', 'true');
-            localStorage.setItem('payment_timestamp', Date.now().toString());
-            
-            console.log('✅ Payment success stored in localStorage');
-            
-            // Show success message
-            alert('Payment successful! Return to the AutoBuzzIn app now. Your account will be automatically restored.');
-            
-            // Try to close the browser tab/window
+        // Process payment and update database
+        async function processPaymentAndUpdateDatabase() {
             try {
-                window.close();
-            } catch (e) {
-                console.log('Could not close window:', e);
+                // Get email from session ID or use a default
+                const email = sessionId ? `user_${sessionId.substring(0, 8)}@example.com` : 'unknown@example.com';
+                
+                console.log('🔄 Updating subscription in database...');
+                console.log('📧 Email:', email);
+                console.log('🆔 Session ID:', sessionId);
+                
+                // Call our Supabase function to update subscription
+                const response = await fetch('https://pazjsviylgoahfxkejwr.supabase.co/functions/v1/update-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhenpzdml5bGdvYWhmeGtlandyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2MDU5NDcsImV4cCI6MjA3MDE4MTk0N30.hQ6OW0TF7nRPlqT5wuczzJBF8hNDD_5d8CfK3ZBUvlg'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        sessionId: sessionId
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('📊 Database update result:', result);
+                
+                if (response.ok && result.success) {
+                    console.log('✅ Database updated successfully');
+                    
+                    // Store payment success in localStorage
+                    localStorage.setItem('payment_success', 'true');
+                    localStorage.setItem('payment_timestamp', Date.now().toString());
+                    localStorage.setItem('session_id', sessionId || '');
+                    
+                    // Update status message
+                    document.getElementById('status-message').innerHTML = `
+                        <strong>✅ Payment processed successfully!</strong><br>
+                        Your account has been activated. You can now return to the app.
+                    `;
+                    
+                    // Enable return button
+                    const returnButton = document.getElementById('return-button');
+                    returnButton.disabled = false;
+                    returnButton.innerHTML = 'Return to AutoBuzzIn App';
+                    
+                    // Try to redirect back to the app
+                    setTimeout(() => {
+                        returnToApp();
+                    }, 2000);
+                    
+                } else {
+                    throw new Error(result.error || 'Failed to update database');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error processing payment:', error);
+                document.getElementById('status-message').innerHTML = `
+                    <strong>⚠️ Payment processed but activation failed</strong><br>
+                    Please return to the app manually. Your payment was successful.
+                `;
+                document.getElementById('return-button').disabled = false;
+                document.getElementById('return-button').innerHTML = 'Return to AutoBuzzIn App';
             }
         }
 
-        // Auto-trigger after 5 seconds
-        setTimeout(() => {
-            storeSuccessAndRedirect();
-        }, 5000);
+        // Return to app function
+        function returnToApp() {
+            // Try to redirect back to the app using different methods
+            const redirectUrls = [
+                'autobuzzin://?payment_success=true',
+                'capacitor://localhost?payment_success=true',
+                'autobuzzin://app?payment_success=true',
+                'capacitor://localhost/app?payment_success=true'
+            ];
+            
+            let redirected = false;
+            for (const url of redirectUrls) {
+                try {
+                    console.log('Attempting redirect to:', url);
+                    window.location.href = url;
+                    redirected = true;
+                    break;
+                } catch (e) {
+                    console.log('Redirect failed for:', url, e);
+                }
+            }
+
+            if (!redirected) {
+                alert('Payment successful! Please return to the AutoBuzzIn app manually. Your account will be automatically restored.');
+            }
+        }
+
+        // Start processing immediately
+        processPaymentAndUpdateDatabase();
     </script>
 </body>
 </html>
