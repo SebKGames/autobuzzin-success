@@ -199,6 +199,7 @@
                 const returnButton = document.getElementById('return-button');
                 returnButton.disabled = false;
                 returnButton.innerHTML = 'Return to AutoBuzzIn App';
+                returnButton.onclick = returnToApp;
                 
                 // Try to redirect back to the app
                 setTimeout(() => {
@@ -218,29 +219,90 @@
 
         // Return to app function
         function returnToApp() {
-            // Try to redirect back to the app using different methods
-            const redirectUrls = [
-                'autobuzzin://?payment_success=true',
-                'capacitor://localhost?payment_success=true',
-                'autobuzzin://app?payment_success=true',
-                'capacitor://localhost/app?payment_success=true'
+            console.log('🔄 Attempting to return to app...');
+            
+            // Try different redirect methods
+            const redirectMethods = [
+                // Method 1: Try to open the app directly
+                () => {
+                    console.log('Trying direct app open...');
+                    window.location.href = 'autobuzzin://';
+                },
+                // Method 2: Try Capacitor scheme
+                () => {
+                    console.log('Trying Capacitor scheme...');
+                    window.location.href = 'capacitor://localhost';
+                },
+                // Method 3: Try with payment success parameter
+                () => {
+                    console.log('Trying with payment success parameter...');
+                    window.location.href = 'autobuzzin://?payment_success=true';
+                },
+                // Method 4: Try Capacitor with parameter
+                () => {
+                    console.log('Trying Capacitor with parameter...');
+                    window.location.href = 'capacitor://localhost?payment_success=true';
+                },
+                // Method 5: Try to close the window/tab
+                () => {
+                    console.log('Trying to close window...');
+                    window.close();
+                }
             ];
             
-            let redirected = false;
-            for (const url of redirectUrls) {
-                try {
-                    console.log('Attempting redirect to:', url);
-                    window.location.href = url;
-                    redirected = true;
-                    break;
-                } catch (e) {
-                    console.log('Redirect failed for:', url, e);
+            let attemptCount = 0;
+            const maxAttempts = redirectMethods.length;
+            
+            function tryNextMethod() {
+                if (attemptCount < maxAttempts) {
+                    try {
+                        console.log(`Attempt ${attemptCount + 1}/${maxAttempts}`);
+                        redirectMethods[attemptCount]();
+                        attemptCount++;
+                        
+                        // Try next method after a short delay
+                        setTimeout(tryNextMethod, 1000);
+                    } catch (e) {
+                        console.log(`Method ${attemptCount + 1} failed:`, e);
+                        attemptCount++;
+                        setTimeout(tryNextMethod, 1000);
+                    }
+                } else {
+                    // All methods failed
+                    console.log('All redirect methods failed');
+                    showManualRedirect();
                 }
             }
-
-            if (!redirected) {
-                alert('Payment successful! Please return to the AutoBuzzIn app manually. Your account will be automatically restored.');
-            }
+            
+            // Start trying methods
+            tryNextMethod();
+        }
+        
+        function showManualRedirect() {
+            console.log('Showing manual redirect options');
+            document.getElementById('status-message').innerHTML = `
+                <strong>✅ Payment Successful!</strong><br>
+                <p style="margin: 16px 0; color: #6b7280;">
+                    Please return to the AutoBuzzIn app manually.<br>
+                    Your account will be automatically restored when you return.
+                </p>
+                <p style="font-size: 14px; color: #9ca3af;">
+                    If the app doesn't open automatically, you can:<br>
+                    • Close this tab and return to the app<br>
+                    • The app will detect your payment automatically
+                </p>
+            `;
+            
+            const returnButton = document.getElementById('return-button');
+            returnButton.innerHTML = 'Close This Page';
+            returnButton.onclick = () => {
+                try {
+                    window.close();
+                } catch (e) {
+                    // If can't close, at least try to go back
+                    window.history.back();
+                }
+            };
         }
 
         // Start processing immediately
