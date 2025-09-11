@@ -168,6 +168,14 @@
             allParams: Object.fromEntries(urlParams.entries())
         });
         
+        // Show URL parameters on the page for debugging
+        document.getElementById('status-message').innerHTML = `
+            <strong>�� Debug Info:</strong><br>
+            Session ID: ${sessionId || 'None'}<br>
+            Email: ${email || 'None'}<br>
+            All Params: ${JSON.stringify(Object.fromEntries(urlParams.entries()))}
+        `;
+        
         if (sessionId) {
             document.getElementById('confirmation-number').textContent = sessionId.substring(0, 20) + '...';
             console.log('Payment successful with session ID:', sessionId);
@@ -181,6 +189,11 @@
                 // Use email from URL parameters, or generate a fallback
                 const paymentEmail = email || (sessionId ? `user_${sessionId.substring(0, 8)}@example.com` : 'unknown@example.com');
                 
+                console.log('🔄 Processing payment...');
+                console.log('📧 Email from URL:', email);
+                console.log('📧 Final payment email:', paymentEmail);
+                console.log('🆔 Session ID:', sessionId);
+                
                 console.log('🔄 Updating subscription in database...');
                 console.log('📧 Email from URL:', email);
                 console.log('📧 Payment Email (final):', paymentEmail);
@@ -190,8 +203,13 @@
                 // The app will detect this and handle the database update
                 localStorage.setItem('payment_success', 'true');
                 localStorage.setItem('payment_timestamp', Date.now().toString());
-                localStorage.setItem('session_id', sessionId || '');
+                localStorage.setItem('session_id', sessionId || 'test_session_' + Date.now());
                 localStorage.setItem('payment_email', paymentEmail);
+                
+                console.log('✅ Stored in localStorage:');
+                console.log('  payment_success:', localStorage.getItem('payment_success'));
+                console.log('  session_id:', localStorage.getItem('session_id'));
+                console.log('  payment_email:', localStorage.getItem('payment_email'));
                 
                 console.log('✅ Payment success stored in localStorage');
                 console.log('�� Stored email:', paymentEmail);
