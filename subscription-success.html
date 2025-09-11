@@ -116,7 +116,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">��</div>
+        <div class="logo"></div>
         <div class="success-icon">✅</div>
         <h1>Payment Successful!</h1>
         <p class="subtitle">Your AutoBuzzIn account has been upgraded to full access.</p>
@@ -201,10 +201,10 @@
                 returnButton.innerHTML = 'Return to AutoBuzzIn App';
                 returnButton.onclick = returnToApp;
                 
-                // Try to redirect back to the app
+                // Auto-close after 3 seconds to return to app
                 setTimeout(() => {
                     returnToApp();
-                }, 2000);
+                }, 3000);
                 
             } catch (error) {
                 console.error('❌ Error processing payment:', error);
@@ -221,61 +221,18 @@
         function returnToApp() {
             console.log('🔄 Attempting to return to app...');
             
-            // Try different redirect methods
-            const redirectMethods = [
-                // Method 1: Try to open the app directly
-                () => {
-                    console.log('Trying direct app open...');
-                    window.location.href = 'autobuzzin://';
-                },
-                // Method 2: Try Capacitor scheme
-                () => {
-                    console.log('Trying Capacitor scheme...');
-                    window.location.href = 'capacitor://localhost';
-                },
-                // Method 3: Try with payment success parameter
-                () => {
-                    console.log('Trying with payment success parameter...');
-                    window.location.href = 'autobuzzin://?payment_success=true';
-                },
-                // Method 4: Try Capacitor with parameter
-                () => {
-                    console.log('Trying Capacitor with parameter...');
-                    window.location.href = 'capacitor://localhost?payment_success=true';
-                },
-                // Method 5: Try to close the window/tab
-                () => {
-                    console.log('Trying to close window...');
-                    window.close();
-                }
-            ];
+            // For Capacitor apps, the best approach is to just close the window
+            // The app will detect the payment via localStorage when it comes back to foreground
+            console.log('Closing window to return to app...');
             
-            let attemptCount = 0;
-            const maxAttempts = redirectMethods.length;
-            
-            function tryNextMethod() {
-                if (attemptCount < maxAttempts) {
-                    try {
-                        console.log(`Attempt ${attemptCount + 1}/${maxAttempts}`);
-                        redirectMethods[attemptCount]();
-                        attemptCount++;
-                        
-                        // Try next method after a short delay
-                        setTimeout(tryNextMethod, 1000);
-                    } catch (e) {
-                        console.log(`Method ${attemptCount + 1} failed:`, e);
-                        attemptCount++;
-                        setTimeout(tryNextMethod, 1000);
-                    }
-                } else {
-                    // All methods failed
-                    console.log('All redirect methods failed');
-                    showManualRedirect();
-                }
+            // Try to close the window/tab
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Could not close window:', e);
+                // If we can't close, show the manual redirect message
+                showManualRedirect();
             }
-            
-            // Start trying methods
-            tryNextMethod();
         }
         
         function showManualRedirect() {
