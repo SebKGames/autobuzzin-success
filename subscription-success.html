@@ -288,6 +288,18 @@
             };
         }
 
+        // Test: Store data immediately for debugging
+        console.log('🧪 Testing localStorage storage...');
+        localStorage.setItem('payment_success', 'true');
+        localStorage.setItem('session_id', 'test_session_' + Date.now());
+        localStorage.setItem('payment_email', 'test@example.com');
+        localStorage.setItem('payment_timestamp', Date.now().toString());
+        
+        console.log('✅ Test data stored in localStorage');
+        console.log('payment_success:', localStorage.getItem('payment_success'));
+        console.log('session_id:', localStorage.getItem('session_id'));
+        console.log('payment_email:', localStorage.getItem('payment_email'));
+        
         // Start processing immediately
         processPaymentAndUpdateDatabase();
     </script>
