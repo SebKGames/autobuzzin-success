@@ -157,9 +157,16 @@
     </div>
 
     <script>
-        // Get session ID from URL
+        // Get session ID and email from URL
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session_id');
+        const email = urlParams.get('email') || urlParams.get('customer_email');
+        
+        console.log('URL parameters:', {
+            sessionId,
+            email,
+            allParams: Object.fromEntries(urlParams.entries())
+        });
         
         if (sessionId) {
             document.getElementById('confirmation-number').textContent = sessionId.substring(0, 20) + '...';
@@ -171,11 +178,12 @@
         // Process payment and update database
         async function processPaymentAndUpdateDatabase() {
             try {
-                // Get email from session ID or use a default
-                const email = sessionId ? `user_${sessionId.substring(0, 8)}@example.com` : 'unknown@example.com';
+                // Use email from URL parameters, or generate a fallback
+                const paymentEmail = email || (sessionId ? `user_${sessionId.substring(0, 8)}@example.com` : 'unknown@example.com');
                 
                 console.log('🔄 Updating subscription in database...');
-                console.log('📧 Email:', email);
+                console.log('📧 Email from URL:', email);
+                console.log('📧 Payment Email (final):', paymentEmail);
                 console.log('🆔 Session ID:', sessionId);
                 
                 // Store payment success in localStorage and redirect
@@ -183,11 +191,11 @@
                 localStorage.setItem('payment_success', 'true');
                 localStorage.setItem('payment_timestamp', Date.now().toString());
                 localStorage.setItem('session_id', sessionId || '');
-                localStorage.setItem('payment_email', email);
+                localStorage.setItem('payment_email', paymentEmail);
                 
                 console.log('✅ Payment success stored in localStorage');
-                console.log('📧 Email:', email);
-                console.log('🆔 Session ID:', sessionId);
+                console.log('�� Stored email:', paymentEmail);
+                console.log('🆔 Stored session ID:', sessionId);
                 
                 // Update status message
                 document.getElementById('status-message').innerHTML = `
