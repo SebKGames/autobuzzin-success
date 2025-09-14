@@ -94,7 +94,7 @@
             background: #2563eb;
             transform: translateY(-1px);
         }
-        .button:disabled {
+        .button:enabled {
             background: #9ca3af;
             cursor: not-allowed;
         }
@@ -146,13 +146,13 @@
         </div>
 
         <div id="status-message">
-            <strong>🔄 Processing your payment...</strong><br>
-            Please wait while we activate your account.
+            <strong>✅ Payment Successful!</strong><br>
+            Your account has been activated.
         </div>
 
-        <button id="return-button" class="button" disabled style="font-size: 18px; padding: 16px 32px; margin-top: 20px; cursor: pointer;">
-            <span class="loading"></span>
-            Processing...
+        <button id="return-button" class="button" enabled style="font-size: 18px; padding: 16px 32px; margin-top: 20px; cursor: pointer;">
+            ✅
+            Return to AutoBuzzIn App
         </button>
         
         <div id="return-instructions" style="display: none; margin-top: 20px; padding: 20px; background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 12px;">
@@ -201,7 +201,7 @@
                 // Use email from URL parameters, or generate a fallback
                 const paymentEmail = email || (sessionId ? `user_${sessionId.substring(0, 8)}@example.com` : 'unknown@example.com');
                 
-                console.log('🔄 Processing payment...');
+                console.log('🔄 Return to AutoBuzzIn Appyment...');
                 console.log('📧 Email from URL:', email);
                 console.log('📧 Final payment email:', paymentEmail);
                 console.log('🆔 Session ID:', sessionId);
@@ -298,7 +298,7 @@
                 
                 // Enable return button
                 const returnButton = document.getElementById('return-button');
-                returnButton.disabled = false;
+                returnButton.enabled = false;
                 returnButton.innerHTML = 'Return to AutoBuzzIn App';
                 // The onclick is already set in the HTML, so we don't need to change it
                 
@@ -312,7 +312,7 @@
                     Please return to the app manually. Your payment was successful.
                 `;
                 const returnButton = document.getElementById('return-button');
-                returnButton.disabled = false;
+                returnButton.enabled = false;
                 returnButton.innerHTML = 'Return to AutoBuzzIn App';
                 // The onclick is already set in the HTML, so we don't need to change it
                 document.getElementById('return-instructions').style.display = 'block';
@@ -349,12 +349,12 @@
         function debugButton() {
             const returnButton = document.getElementById('return-button');
             console.log('🔍 Button state:', {
-                disabled: returnButton.disabled,
+                enabled: returnButton.disabled,
                 innerHTML: returnButton.innerHTML,
                 onclick: returnButton.onclick,
                 hasEventListener: returnButton.onclick !== null
             });
-            alert(`Button disabled: ${returnButton.disabled}, Text: ${returnButton.innerHTML}`);
+            alert(`Button enabled: ${returnButton.disabled}, Text: ${returnButton.innerHTML}`);
         }
         
         // Manual payment data storage function
@@ -416,7 +416,7 @@
                 } catch (e) {
                     // If we can't close, just show a message
                     returnButton.innerHTML = '✅ Payment Complete - Return to App';
-                    returnButton.disabled = true;
+                    returnButton.enabled = true;
                     returnButton.style.background = '#6b7280';
                 }
             };
@@ -471,7 +471,7 @@ console.log('✅ Payment data stored in localStorage');
 
 // Enable return button
 const returnButton = document.getElementById('return-button');
-returnButton.disabled = false;
+returnButton.enabled = false;
 returnButton.innerHTML = 'Return to AutoBuzzIn App';
 returnButton.onclick = () => {
     alert('Please manually return to the AutoBuzzIn app. Your payment is complete!');
