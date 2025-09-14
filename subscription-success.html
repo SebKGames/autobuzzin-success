@@ -450,74 +450,37 @@
         }
 
         // DEAD SIMPLE APPROACH - Just store data and redirect
-        console.log('✅ Payment success page loaded');
+// Find the script section and replace it
+// Immediately show success and store data
+document.getElementById('status-message').innerHTML = `
+    <strong>✅ Payment Successful!</strong><br>
+    Your account has been activated.
+`;
 
-        // Function to try multiple methods to open the app
-        function tryOpenApp() {
-            console.log("🔄 Trying to open AutoBuzzIn app...");
-            
-            // For mobile Safari - create invisible iframe to try app scheme
-            const iframe = document.createElement("iframe");
-            iframe.style.display = "none";
-            iframe.src = "com.srqclassicalmusic.autobuzzin://";
-            document.body.appendChild(iframe);
-            
-            // Remove iframe after attempt
-            setTimeout(() => {
-                document.body.removeChild(iframe);
-            }, 1000);
-            
-            // Fallback to instructions after a delay
-            setTimeout(() => {
-                alert("Please manually return to the AutoBuzzIn app. Your payment was successful and your account is activated!");
-            }, 2000);
-        }                console.log("❌ App scheme failed:", e);
-            }
-            
-            // Method 2: Try localhost (for development)
-            try {
-                window.location.href = "http://localhost:8081/";
-                console.log("✅ Localhost redirect attempted");
-                return;
-            } catch (e) {
-                console.log("❌ Localhost failed:", e);
-            }
-            
-            // Method 3: Show instructions
-            alert("Please manually return to the AutoBuzzIn app. Your payment is complete!");
-        }
-        
-        // Always show success
-        document.getElementById('status-message').innerHTML = `
-            <strong>✅ Payment Successful!</strong><br>
-            Your account has been activated.
-        `;
-        
-        // Store payment success in localStorage (simple and reliable)
-        localStorage.setItem('payment_success', 'true');
-        localStorage.setItem('payment_timestamp', Date.now().toString());
-        if (sessionId) localStorage.setItem('session_id', sessionId);
-        if (email) localStorage.setItem('payment_email', email);
-        
-        console.log('✅ Payment data stored in localStorage');
-        
-        // Process payment in background (don't wait for it)
-        if (sessionId && email) {
-            processPaymentAndUpdateDatabase().catch(console.error);
-        }
-        
-        // Simple redirect after 3 seconds
-        setTimeout(() => {
-            tryOpenApp();
-        }, 3000);
-        
-        // Simple return button
-        const returnButton = document.getElementById('return-button');
-        returnButton.disabled = false;
-        returnButton.innerHTML = 'Return to App Now';
-        returnButton.onclick = () => {
-            tryOpenApp();
-        };
+// Store payment data in localStorage
+const urlParams = new URLSearchParams(window.location.search);
+const sessionId = urlParams.get('session_id');
+const email = urlParams.get('email') || urlParams.get('customer_email');
+
+localStorage.setItem('payment_success', 'true');
+localStorage.setItem('payment_timestamp', Date.now().toString());
+if (sessionId) localStorage.setItem('session_id', sessionId);
+if (email) localStorage.setItem('payment_email', email);
+
+console.log('✅ Payment data stored in localStorage');
+
+// Enable return button
+const returnButton = document.getElementById('return-button');
+returnButton.disabled = false;
+returnButton.innerHTML = 'Return to AutoBuzzIn App';
+returnButton.onclick = () => {
+    alert('Please manually return to the AutoBuzzIn app. Your payment is complete!');
+};
+
+// Auto redirect after 5 seconds
+setTimeout(() => {
+    alert('Please manually return to the AutoBuzzIn app. Your payment is complete!');
+}, 5000);
     </script>
 </body>
 </html>
