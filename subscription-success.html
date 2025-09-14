@@ -456,13 +456,22 @@
         function tryOpenApp() {
             console.log("🔄 Trying to open AutoBuzzIn app...");
             
-            // Method 1: Try app URL scheme
-            try {
-                window.location.href = "com.srqclassicalmusic.autobuzzin://";
-                console.log("✅ App scheme attempted");
-                return;
-            } catch (e) {
-                console.log("❌ App scheme failed:", e);
+            // For mobile Safari - create invisible iframe to try app scheme
+            const iframe = document.createElement("iframe");
+            iframe.style.display = "none";
+            iframe.src = "com.srqclassicalmusic.autobuzzin://";
+            document.body.appendChild(iframe);
+            
+            // Remove iframe after attempt
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 1000);
+            
+            // Fallback to instructions after a delay
+            setTimeout(() => {
+                alert("Please manually return to the AutoBuzzIn app. Your payment was successful and your account is activated!");
+            }, 2000);
+        }                console.log("❌ App scheme failed:", e);
             }
             
             // Method 2: Try localhost (for development)
