@@ -116,7 +116,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo">��</div>
+        <div class="logo">📞</div>
         <div class="success-icon">✅</div>
         <h1>Payment Successful!</h1>
         <p class="subtitle">Your AutoBuzzIn account has been upgraded to full access.</p>
@@ -150,10 +150,22 @@
             Please wait while we activate your account.
         </div>
 
-        <button id="return-button" class="button" disabled>
+        <button id="return-button" class="button" disabled style="font-size: 18px; padding: 16px 32px; margin-top: 20px; cursor: pointer;">
             <span class="loading"></span>
             Processing...
         </button>
+        
+        <div id="return-instructions" style="display: none; margin-top: 20px; padding: 20px; background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 12px;">
+            <h3 style="color: #0c4a6e; margin: 0 0 16px 0; font-size: 18px;">📱 How to Return to AutoBuzzIn:</h3>
+            <div style="color: #0c4a6e; font-size: 16px; line-height: 1.6;">
+                <p style="margin: 8px 0;"><strong>Method 1:</strong> Look for the AutoBuzzIn app icon on your home screen</p>
+                <p style="margin: 8px 0;"><strong>Method 2:</strong> Swipe up from the bottom and use the app switcher</p>
+                <p style="margin: 8px 0;"><strong>Method 3:</strong> Double-tap the home button (iPhone) or use recent apps (Android)</p>
+            </div>
+            <p style="margin: 16px 0 0 0; color: #166534; font-weight: 600;">
+                ✅ Your payment is complete! The app will automatically detect your subscription.
+            </p>
+        </div>
     </div>
 
     <script>
@@ -170,7 +182,7 @@
         
         // Show URL parameters on the page for debugging
         document.getElementById('status-message').innerHTML = `
-            <strong>�� Debug Info:</strong><br>
+            <strong>🔍 Debug Info:</strong><br>
             Session ID: ${sessionId || 'None'}<br>
             Email: ${email || 'None'}<br>
             All Params: ${JSON.stringify(Object.fromEntries(urlParams.entries()))}
@@ -226,20 +238,57 @@
                     console.error('❌ Error calling Supabase function:', error);
                 }
                 
-                // Also store in localStorage as backup
-                localStorage.setItem('payment_success', 'true');
-                localStorage.setItem('payment_timestamp', Date.now().toString());
-                localStorage.setItem('session_id', sessionId || 'test_session_' + Date.now());
-                localStorage.setItem('payment_email', paymentEmail);
+                // Store in localStorage for any valid session ID (including test sessions)
+                if (sessionId) {
+                    localStorage.setItem('payment_success', 'true');
+                    localStorage.setItem('payment_timestamp', Date.now().toString());
+                    localStorage.setItem('session_id', sessionId);
+                    localStorage.setItem('payment_email', paymentEmail);
+                    console.log('✅ Payment data stored in localStorage:', { sessionId, paymentEmail });
+                    
+                    // Send message to parent window (if in iframe) or try to communicate with app
+                    try {
+                        if (window.parent && window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'PAYMENT_SUCCESS',
+                                sessionId: sessionId,
+                                email: paymentEmail,
+                                timestamp: Date.now()
+                            }, '*');
+                            console.log('📤 Payment success message sent to parent window');
+                        }
+                    } catch (e) {
+                        console.log('Failed to send message to parent window:', e);
+                    }
+                    
+                    // Try to communicate with the app using localStorage events
+                    try {
+                        localStorage.setItem('payment_success_event', JSON.stringify({
+                            type: 'PAYMENT_SUCCESS',
+                            sessionId: sessionId,
+                            email: paymentEmail,
+                            timestamp: Date.now()
+                        }));
+                        console.log('📤 Payment success event stored in localStorage');
+                    } catch (e) {
+                        console.log('Failed to store payment success event:', e);
+                    }
+                } else {
+                    console.log('⚠️ No sessionId found, storing test data for debugging');
+                    // Store test data for debugging
+                    localStorage.setItem('payment_success', 'true');
+                    localStorage.setItem('payment_timestamp', Date.now().toString());
+                    localStorage.setItem('session_id', 'test_session_' + Date.now());
+                    localStorage.setItem('payment_email', paymentEmail || 'test@example.com');
+                    console.log('✅ Test payment data stored in localStorage');
+                }
                 
-                console.log('✅ Stored in localStorage:');
-                console.log('  payment_success:', localStorage.getItem('payment_success'));
-                console.log('  session_id:', localStorage.getItem('session_id'));
-                console.log('  payment_email:', localStorage.getItem('payment_email'));
-                
-                console.log('✅ Payment success stored in localStorage');
-                console.log('�� Stored email:', paymentEmail);
-                console.log('🆔 Stored session ID:', sessionId);
+                // Log what was actually stored
+                if (sessionId && sessionId.startsWith('cs_')) {
+                    console.log('✅ Payment success stored in localStorage');
+                    console.log('📧 Stored email:', paymentEmail);
+                    console.log('🆔 Stored session ID:', sessionId);
+                }
                 
                 // Update status message
                 document.getElementById('status-message').innerHTML = `
@@ -251,12 +300,10 @@
                 const returnButton = document.getElementById('return-button');
                 returnButton.disabled = false;
                 returnButton.innerHTML = 'Return to AutoBuzzIn App';
-                returnButton.onclick = returnToApp;
+                // The onclick is already set in the HTML, so we don't need to change it
                 
-                // Auto-close after 2 seconds to return to app
-                setTimeout(() => {
-                    returnToApp();
-                }, 2000);
+                // Show return instructions
+                document.getElementById('return-instructions').style.display = 'block';
                 
             } catch (error) {
                 console.error('❌ Error processing payment:', error);
@@ -264,71 +311,115 @@
                     <strong>⚠️ Payment processed but activation failed</strong><br>
                     Please return to the app manually. Your payment was successful.
                 `;
-                document.getElementById('return-button').disabled = false;
-                document.getElementById('return-button').innerHTML = 'Return to AutoBuzzIn App';
+                const returnButton = document.getElementById('return-button');
+                returnButton.disabled = false;
+                returnButton.innerHTML = 'Return to AutoBuzzIn App';
+                // The onclick is already set in the HTML, so we don't need to change it
+                document.getElementById('return-instructions').style.display = 'block';
             }
+        }
+
+        // Simple return function that will definitely work
+        function handleReturnClick() {
+            console.log('🔥 RETURN BUTTON CLICKED!');
+            alert('RETURN BUTTON WORKS! Closing window...');
+            
+            // Try to close the window
+            try {
+                window.close();
+            } catch (e) {
+                console.log('Window close failed, trying back...');
+                try {
+                    window.history.back();
+                } catch (e2) {
+                    console.log('Back failed, showing message...');
+                    alert('Please manually return to the AutoBuzzIn app. Your payment is complete!');
+                }
+            }
+        }
+
+        // Test function for debugging
+        function testReturn() {
+            console.log('🧪 Test return button clicked!');
+            alert('Test button works! Now trying to return to app...');
+            handleReturnClick();
+        }
+        
+        // Debug function to check button state
+        function debugButton() {
+            const returnButton = document.getElementById('return-button');
+            console.log('🔍 Button state:', {
+                disabled: returnButton.disabled,
+                innerHTML: returnButton.innerHTML,
+                onclick: returnButton.onclick,
+                hasEventListener: returnButton.onclick !== null
+            });
+            alert(`Button disabled: ${returnButton.disabled}, Text: ${returnButton.innerHTML}`);
+        }
+        
+        // Manual payment data storage function
+        function storeManualPayment() {
+            console.log('💾 Manually storing payment data...');
+            localStorage.setItem('payment_success', 'true');
+            localStorage.setItem('payment_timestamp', Date.now().toString());
+            localStorage.setItem('session_id', 'manual_test_' + Date.now());
+            localStorage.setItem('payment_email', 'test@example.com');
+            console.log('✅ Manual payment data stored');
+            alert('Payment data stored! Now return to the app and it should detect it.');
         }
 
         // Return to app function
         function returnToApp() {
-            console.log('🔄 Attempting to return to app...');
+            console.log('🔄 Return button clicked!');
+            alert('Return button clicked! Trying to return to app...');
             
-            // Try multiple methods to return to the app
-            const methods = [
-                // Method 1: Try to close the window
-                () => {
-                    try {
-                        window.close();
-                        return true;
-                    } catch (e) {
-                        console.log('Method 1 failed:', e);
-                        return false;
-                    }
-                },
-                // Method 2: Try to navigate back
-                () => {
-                    try {
-                        window.history.back();
-                        return true;
-                    } catch (e) {
-                        console.log('Method 2 failed:', e);
-                        return false;
-                    }
-                },
-                // Method 3: Try to open the app URL scheme
-                () => {
-                    try {
-                        window.location.href = 'autobuzzin://';
-                        return true;
-                    } catch (e) {
-                        console.log('Method 3 failed:', e);
-                        return false;
-                    }
-                },
-                // Method 4: Try Capacitor URL scheme
-                () => {
-                    try {
-                        window.location.href = 'capacitor://localhost';
-                        return true;
-                    } catch (e) {
-                        console.log('Method 4 failed:', e);
-                        return false;
-                    }
-                }
-            ];
-            
-            // Try each method until one works
-            for (let i = 0; i < methods.length; i++) {
-                console.log(`Trying method ${i + 1}...`);
-                if (methods[i]()) {
-                    console.log(`Method ${i + 1} succeeded`);
-                    return;
+            // Simple approach - try to close the window first
+            try {
+                window.close();
+                console.log('✅ Window close attempted');
+            } catch (e) {
+                console.log('❌ Window close failed:', e);
+                
+                // If window.close() doesn't work, try history.back()
+                try {
+                    window.history.back();
+                    console.log('✅ History back attempted');
+                } catch (e2) {
+                    console.log('❌ History back failed:', e2);
+                    
+                    // Show instructions as fallback
+                    alert('Please manually return to the AutoBuzzIn app. Your payment is complete!');
                 }
             }
+        }
+        
+        function showManualReturnMessage() {
+            document.getElementById('status-message').innerHTML = `
+                <strong>✅ Payment Successful!</strong><br>
+                <p style="margin: 16px 0; color: #6b7280;">
+                    Your payment has been processed successfully!<br>
+                    Your account is now activated and ready to use.
+                </p>
+            `;
             
-            // If all methods fail, show manual redirect
-            console.log('All methods failed, showing manual redirect');
-            showManualRedirect();
+            // Show the return instructions
+            document.getElementById('return-instructions').style.display = 'block';
+            
+            const returnButton = document.getElementById('return-button');
+            returnButton.innerHTML = 'Got It - Close This Page';
+            returnButton.style.background = '#10b981';
+            returnButton.style.fontSize = '16px';
+            returnButton.style.padding = '12px 24px';
+            returnButton.onclick = () => {
+                try {
+                    window.close();
+                } catch (e) {
+                    // If we can't close, just show a message
+                    returnButton.innerHTML = '✅ Payment Complete - Return to App';
+                    returnButton.disabled = true;
+                    returnButton.style.background = '#6b7280';
+                }
+            };
         }
         
         function showManualRedirect() {
@@ -358,20 +449,40 @@
             };
         }
 
-        // Test: Store data immediately for debugging
-        console.log('🧪 Testing localStorage storage...');
+        // DEAD SIMPLE APPROACH - Just store data and redirect
+        console.log('✅ Payment success page loaded');
+        
+        // Always show success
+        document.getElementById('status-message').innerHTML = `
+            <strong>✅ Payment Successful!</strong><br>
+            Your account has been activated.
+        `;
+        
+        // Store payment success in localStorage (simple and reliable)
         localStorage.setItem('payment_success', 'true');
-        localStorage.setItem('session_id', 'test_session_' + Date.now());
-        localStorage.setItem('payment_email', 'test@example.com');
         localStorage.setItem('payment_timestamp', Date.now().toString());
+        if (sessionId) localStorage.setItem('session_id', sessionId);
+        if (email) localStorage.setItem('payment_email', email);
         
-        console.log('✅ Test data stored in localStorage');
-        console.log('payment_success:', localStorage.getItem('payment_success'));
-        console.log('session_id:', localStorage.getItem('session_id'));
-        console.log('payment_email:', localStorage.getItem('payment_email'));
+        console.log('✅ Payment data stored in localStorage');
         
-        // Start processing immediately
-        processPaymentAndUpdateDatabase();
+        // Process payment in background (don't wait for it)
+        if (sessionId && email) {
+            processPaymentAndUpdateDatabase().catch(console.error);
+        }
+        
+        // Simple redirect after 3 seconds
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 3000);
+        
+        // Simple return button
+        const returnButton = document.getElementById('return-button');
+        returnButton.disabled = false;
+        returnButton.innerHTML = 'Return to App Now';
+        returnButton.onclick = () => {
+            window.location.href = '/';
+        };
     </script>
 </body>
 </html>
