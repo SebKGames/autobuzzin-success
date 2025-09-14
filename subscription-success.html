@@ -451,6 +451,32 @@
 
         // DEAD SIMPLE APPROACH - Just store data and redirect
         console.log('✅ Payment success page loaded');
+
+        // Function to try multiple methods to open the app
+        function tryOpenApp() {
+            console.log("🔄 Trying to open AutoBuzzIn app...");
+            
+            // Method 1: Try app URL scheme
+            try {
+                window.location.href = "com.srqclassicalmusic.autobuzzin://";
+                console.log("✅ App scheme attempted");
+                return;
+            } catch (e) {
+                console.log("❌ App scheme failed:", e);
+            }
+            
+            // Method 2: Try localhost (for development)
+            try {
+                window.location.href = "http://localhost:8081/";
+                console.log("✅ Localhost redirect attempted");
+                return;
+            } catch (e) {
+                console.log("❌ Localhost failed:", e);
+            }
+            
+            // Method 3: Show instructions
+            alert("Please manually return to the AutoBuzzIn app. Your payment is complete!");
+        }
         
         // Always show success
         document.getElementById('status-message').innerHTML = `
@@ -473,7 +499,7 @@
         
         // Simple redirect after 3 seconds
         setTimeout(() => {
-            window.location.href = 'com.srqclassicalmusic.autobuzzin://';
+            tryOpenApp();
         }, 3000);
         
         // Simple return button
@@ -481,7 +507,7 @@
         returnButton.disabled = false;
         returnButton.innerHTML = 'Return to App Now';
         returnButton.onclick = () => {
-            window.location.href = 'com.srqclassicalmusic.autobuzzin://';
+            tryOpenApp();
         };
     </script>
 </body>
